@@ -78,8 +78,10 @@ COPY start.sh ./
 COPY --from=composer /src/vendor ./vendor
 COPY --from=frontend /src/public/build ./public/build
 
-# 创建SQLite数据库目录并设置权限
+# 创建SQLite数据库目录和必要的应用目录并设置权限
 RUN mkdir -p /var/www/html/database \
+    && mkdir -p /var/www/html/storage \
+    && mkdir -p /var/www/html/bootstrap/cache \
     && chown -R 1000:1000 /var/www/html \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod +x /var/www/html/scripts/init_litesql.sh \
