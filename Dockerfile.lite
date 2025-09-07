@@ -36,7 +36,7 @@ FROM jkaninda/nginx-php-fpm:8.2-alpine
 
 # 标签信息
 LABEL maintainer="https://github.com/aspnmy"
-LABEL version="lite-202509"
+LABEL version="lite-202509-optimized"
 LABEL description="Soketi UI with LiteSQL (SQLite) optimization"
 
 # 设置工作目录
@@ -45,12 +45,8 @@ WORKDIR /var/www/html
 # 配置Nginx站点
 COPY nginx.conf /var/www/html/conf/nginx/nginx-site.conf
 
-# 安装最小化的系统依赖
+# 安装最小化的系统依赖并配置PHP
 RUN apk update && apk add --no-cache \
-    git \
-    curl \
-    zip \
-    unzip \
     php82-sqlite3 \
     php82-pdo_sqlite \
     php82-mbstring \
@@ -58,10 +54,17 @@ RUN apk update && apk add --no-cache \
     php82-pcntl \
     php82-bcmath \
     php82-gd \
-    && rm -rf /var/cache/apk/*
+    && rm -rf /var/cache/apk/* \
+    && echo "[PHP]" >> /etc/php82/php.ini \
+    && echo "memory_limit = 256M" >> /etc/php82/php.ini \
+    && echo "max_execution_time = 60" >> /etc/php82/php.ini \
+    && echo "post_max_size = 20M" >> /etc/php82/php.ini \
+    && echo "upload_max_filesize = 20M" >> /etc/php82/php.ini
 
-# 复制应用文件
-COPY . .
+# 复制应用文件（先复制必要的配置文件）
+COPY database/litesql_init.sql ./database/
+COPY scripts/init_litesql.sh ./scripts/
+COPY start.sh ./
 
 # 复制构建阶段的文件
 COPY --from=composer /src/vendor ./vendor
@@ -73,13 +76,6 @@ RUN mkdir -p /var/www/html/database \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod +x /var/www/html/scripts/init_litesql.sh \
     && chmod +x /var/www/html/start.sh
-
-# 配置PHP以优化LiteSQL性能
-RUN echo "[PHP]" >> /etc/php82/php.ini \
-    && echo "memory_limit = 256M" >> /etc/php82/php.ini \
-    && echo "max_execution_time = 60" >> /etc/php82/php.ini \
-    && echo "post_max_size = 20M" >> /etc/php82/php.ini \
-    && echo "upload_max_filesize = 20M" >> /etc/php82/php.ini
 
 # 设置环境变量默认值（可被docker-compose覆盖）
 ENV APP_ENV=production \
