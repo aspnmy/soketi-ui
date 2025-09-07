@@ -1,0 +1,71 @@
+# LiteSQL 专用 Docker Compose 配置
+# 此配置文件针对SQLite数据库进行了优化，减少资源占用和容器大小
+
+version: '3'
+
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile.lite
+      args:
+        user: web
+        uid: 1000
+    container_name: soketi-ui-lite
+    working_dir: /var/www/html
+    environment:
+      # 基础应用配置
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_KEY=
+      - APP_URL=http://localhost
+      
+      # LiteSQL (SQLite) 专用配置
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=/var/www/html/database/database.sqlite
+      
+      # 优化缓存配置
+      - CACHE_DRIVER=file
+      - CACHE_PREFIX=lite_
+      - QUEUE_CONNECTION=sync
+      - SESSION_DRIVER=file
+      - SESSION_LIFETIME=120
+      
+      # 日志配置
+      - LOG_CHANNEL=stack
+      - LOG_LEVEL=info
+    volumes:
+      # 挂载数据库目录以持久化数据
+      - ./database:/var/www/html/database:rw
+      
+      # 挂载存储目录
+      - ./storage/app:/var/www/html/storage/app:rw
+      - ./storage/logs:/var/www/html/storage/logs:rw
+      
+      # 可选：挂载配置文件
+      # - ./.env.lite:/var/www/html/.env:ro
+    ports:
+      - "8080:80"
+    networks:
+      - lite-network
+    restart: unless-stopped
+    # 资源限制（根据实际需求调整）
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '256M'
+        reservations:
+          cpus: '0.1'
+          memory: '128M'
+
+# 网络配置
+networks:
+  lite-network:
+    driver: bridge
+    name: soketi-lite-network
+
+# 注意事项：
+# 1. 首次运行前，请确保生成APP_KEY：docker-compose -f docker-compose.lite.yml run --rm app php artisan key:generate
+# 2. 初始化数据库：docker-compose -f docker-compose.lite.yml run --rm app php artisan migrate --seed
+# 3. 如需自定义配置，可以复制.env.lite为.env并进行修改
