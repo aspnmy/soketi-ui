@@ -10,7 +10,7 @@ WORKDIR /src
 COPY composer.lite.json ./composer.json
 
 # 安装依赖（不包括开发依赖）
-RUN composer install --no-dev --no-scripts --optimize-autoloader
+RUN composer install --no-dev --no-scripts --optimize-autoloader --ignore-platform-reqs
 
 # ===== 构建阶段2：前端资源构建 =====
 FROM node:18-alpine AS frontend
