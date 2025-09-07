@@ -89,7 +89,7 @@ RUN mkdir -p /var/www/html/database \
 
 # 设置环境变量默认值（可被docker-compose覆盖）
 ENV APP_ENV=production \
-    APP_DEBUG=false \
+    APP_DEBUG=true \
     DB_CONNECTION=sqlite \
     DB_DATABASE=/var/www/html/database/database.sqlite \
     CACHE_DRIVER=file \
