@@ -1,0 +1,18 @@
+# 国内专用
+version: '3.8'
+
+services:
+  soketi-ui:
+    container_name: 43251-soketi-ui
+    image: ghcr.io/aspnmy/soketi-ui:node18-php8.2
+    working_dir: /var/www/
+    environment:
+      - APP_DEBUG=true
+      - APP_KEY=
+      - DB_CONNECTION=mysql
+      - DB_HOST=127.0.0.1
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - DB_DATABASE=soketi-ui
+    ports:
+      - "43251:80"  # 保持字符串格式更安全
