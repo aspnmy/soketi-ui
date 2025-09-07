@@ -91,5 +91,5 @@ ENV APP_ENV=production \
 # 暴露端口
 EXPOSE 8000
 
-# 容器启动命令
-CMD ["/start.sh"]
+# # 容器启动命令
+# CMD ["/start.sh"]
