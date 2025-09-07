@@ -64,7 +64,7 @@ RUN set -x && \
     && echo "Finding PHP INI files..." && \ 
     find /etc -name "php.ini" 2>/dev/null || echo "No php.ini found in /etc" && \ 
     # 检查并配置PHP INI文件 - 采用更健壮的方法
-    && mkdir -p /etc/php/8.2/fpm/conf.d/ && \ 
+    mkdir -p /etc/php/8.2/fpm/conf.d/ && \ 
     echo "[PHP]" > /etc/php/8.2/fpm/conf.d/custom.ini && \ 
     echo "memory_limit = 256M" >> /etc/php/8.2/fpm/conf.d/custom.ini && \ 
     echo "max_execution_time = 60" >> /etc/php/8.2/fpm/conf.d/custom.ini && \ 
