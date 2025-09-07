@@ -47,19 +47,28 @@ COPY nginx.conf /var/www/html/conf/nginx/nginx-site.conf
 
 # 安装最小化的系统依赖并配置PHP（Debian系统）
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    php8.2-sqlite3 \
-    php8.2-pdo-sqlite \
-    php8.2-mbstring \
-    php8.2-exif \
-    php8.2-pcntl \
-    php8.2-bcmath \
-    php8.2-gd \
+    php-sqlite3 \
+    php-pdo \
+    php-mbstring \
+    php-exif \
+    php-pcntl \
+    php-bcmath \
+    php-gd \
     && rm -rf /var/lib/apt/lists/* \
-    && echo "[PHP]" >> /etc/php/8.2/fpm/php.ini \
-    && echo "memory_limit = 256M" >> /etc/php/8.2/fpm/php.ini \
-    && echo "max_execution_time = 60" >> /etc/php/8.2/fpm/php.ini \
-    && echo "post_max_size = 20M" >> /etc/php/8.2/fpm/php.ini \
-    && echo "upload_max_filesize = 20M" >> /etc/php/8.2/fpm/php.ini
+    # 检查并配置PHP INI文件
+    && if [ -f /etc/php/8.2/fpm/php.ini ]; then \n\
+        echo "[PHP]" >> /etc/php/8.2/fpm/php.ini \n\
+        echo "memory_limit = 256M" >> /etc/php/8.2/fpm/php.ini \n\
+        echo "max_execution_time = 60" >> /etc/php/8.2/fpm/php.ini \n\
+        echo "post_max_size = 20M" >> /etc/php/8.2/fpm/php.ini \n\
+        echo "upload_max_filesize = 20M" >> /etc/php/8.2/fpm/php.ini; \n\
+    elif [ -f /etc/php.ini ]; then \n\
+        echo "[PHP]" >> /etc/php.ini \n\
+        echo "memory_limit = 256M" >> /etc/php.ini \n\
+        echo "max_execution_time = 60" >> /etc/php.ini \n\
+        echo "post_max_size = 20M" >> /etc/php.ini \n\
+        echo "upload_max_filesize = 20M" >> /etc/php.ini; \n\
+    fi
 
 # 复制应用文件（先复制必要的配置文件）
 COPY database/litesql_init.sql ./database/
