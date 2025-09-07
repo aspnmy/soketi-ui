@@ -32,7 +32,7 @@ services:
     working_dir: /var/www/
     environment:
        APP_DEBUG: 'true'
-       APP_KEY: 'base64:iT7PDx7j8yKVTj0AW81vTnEQmqLwnVfW'
+       APP_KEY: 'base64:iT7PDx7j8yKVTj0AW81vTnEQmqLwnVfW' # 生产环境需要设置成真实数据
        DB_CONNECTION: 'mysql'
        DB_HOST: '10.168.3.165'
        DB_USERNAME: 'laravel'
