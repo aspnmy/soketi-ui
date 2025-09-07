@@ -70,7 +70,9 @@ COPY --from=frontend /src/public/build ./public/build
 # 创建SQLite数据库目录并设置权限
 RUN mkdir -p /var/www/html/database \
     && chown -R 1000:1000 /var/www/html \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod +x /var/www/html/scripts/init_litesql.sh \
+    && chmod +x /var/www/html/start.sh
 
 # 配置PHP以优化LiteSQL性能
 RUN echo "[PHP]" >> /etc/php82/php.ini \
@@ -86,10 +88,11 @@ ENV APP_ENV=production \
     DB_DATABASE=/var/www/html/database/database.sqlite \
     CACHE_DRIVER=file \
     QUEUE_CONNECTION=sync \
-    SESSION_DRIVER=file
+    SESSION_DRIVER=file \
+    LITESQL_INIT_SCRIPT=/var/www/html/database/litesql_init.sql
 
 # 暴露端口
 EXPOSE 8000
 
-# # 容器启动命令
-# CMD ["/start.sh"]
+# 容器启动命令
+CMD ["/start.sh"]
