@@ -32,7 +32,7 @@ COPY jsconfig.json postcss.config.js tailwind.config.js vite.config.mjs ./
 RUN yarn build
 
 # ===== 运行阶段：LiteSQL优化版本 =====
-FROM jkaninda/nginx-php-fpm:8.2-alpine
+FROM richarvey/nginx-php-fpm:8.2-alpine
 
 # 标签信息
 LABEL maintainer="https://github.com/aspnmy"
