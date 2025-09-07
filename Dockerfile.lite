@@ -46,33 +46,25 @@ WORKDIR /var/www/html
 COPY nginx.conf /var/www/html/conf/nginx/nginx-site.conf
 
 # 安装最小化的系统依赖并配置PHP（Debian系统）
-# 先执行更新并添加详细的错误输出
+# 根据基础镜像jkaninda/nginx-php-fpm:8.2信息，该镜像已预装了多种PHP扩展
+# 包括：zip, mbstring, exif, pcntl, bcmath, gd, intl, redis, memcached, pdo_mysql, pdo_pgsql, opcache, rdkafka
+
+# 只需安装可能缺少的SQLite相关扩展
 RUN set -x && \ 
     apt-get update -y || echo "Warning: apt-get update had issues" && \ 
-    # 检查已安装的PHP扩展，只安装未安装的必要扩展
-    dpkg -l | grep -E 'php.*sqlite3|php.*pdo|php.*mbstring|php.*exif|php.*pcntl|php.*bcmath|php.*gd' || \ 
-    apt-get install -y --no-install-recommends --fix-missing \ 
-        php-sqlite3 \ 
-        php-pdo \ 
-        php-mbstring \ 
-        php-exif \ 
-        php-pcntl \ 
-        php-bcmath \ 
-        php-gd \ 
-    && rm -rf /var/lib/apt/lists/* \ 
-    # 详细列出PHP配置文件路径
-    && echo "Finding PHP INI files..." && \ 
-    find /etc -name "php.ini" 2>/dev/null || echo "No php.ini found in /etc" && \ 
-    # 检查并配置PHP INI文件 - 采用更健壮的方法
-    mkdir -p /etc/php/8.2/fpm/conf.d/ && \ 
-    echo "[PHP]" > /etc/php/8.2/fpm/conf.d/custom.ini && \ 
-    echo "memory_limit = 256M" >> /etc/php/8.2/fpm/conf.d/custom.ini && \ 
-    echo "max_execution_time = 60" >> /etc/php/8.2/fpm/conf.d/custom.ini && \ 
-    echo "post_max_size = 20M" >> /etc/php/8.2/fpm/conf.d/custom.ini && \ 
-    echo "upload_max_filesize = 20M" >> /etc/php/8.2/fpm/conf.d/custom.ini && \ 
-    # 同时在可能的全局配置位置也创建配置
-    mkdir -p /etc/php/conf.d/ && \ 
-    cp /etc/php/8.2/fpm/conf.d/custom.ini /etc/php/conf.d/custom.ini || echo "Optional: Global config not created"
+    apt-get install -y --no-install-recommends --fix-missing php-sqlite3 && \ 
+    rm -rf /var/lib/apt/lists/*
+
+# 使用基础镜像提供的PHP配置路径（$PHP_INI_DIR/conf.d/）
+# 这是基础镜像中已设置的标准配置路径
+RUN echo "Finding PHP configuration directories..." && \ 
+    echo "PHP_INI_DIR is set to: $PHP_INI_DIR" && \ 
+    mkdir -p $PHP_INI_DIR/conf.d/ && \ 
+    echo "[PHP]" > $PHP_INI_DIR/conf.d/custom.ini && \ 
+    echo "memory_limit = 256M" >> $PHP_INI_DIR/conf.d/custom.ini && \ 
+    echo "max_execution_time = 60" >> $PHP_INI_DIR/conf.d/custom.ini && \ 
+    echo "post_max_size = 20M" >> $PHP_INI_DIR/conf.d/custom.ini && \ 
+    echo "upload_max_filesize = 20M" >> $PHP_INI_DIR/conf.d/custom.ini
 
 # 复制应用文件（先复制必要的配置文件）
 COPY database/litesql_init.sql ./database/
