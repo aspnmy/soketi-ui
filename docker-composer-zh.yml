@@ -1,18 +1,44 @@
-# 国内专用
-version: '3.8'
+version: '3'
+# 使用外部网络
+# docker network create server_web-network
+networks:
+  server_web-network:
+    # external: true
 
 services:
-  soketi-ui:
+  6001-docker-soketi:
+    image: 'ghcr.io/aspnmy/soketi:pr-1295-16-alpine'
+    environment:
+     SOKETI_DEBUG: '1'
+     SOKETI_METRICS_SERVER_PORT: '9601'
+     SOKETI_DEFAULT_APP_ID: '12345'
+     SOKETI_DEFAULT_APP_KEY: 'base64:iT7PDx7j8yKVTj0AW81vTnEQmqLwnVfW'
+     SOKETI_DEFAULT_APP_SECRET: 'HIJKLMNOP'
+    command: ["node", "/app/bin/server.js", "start", "--config=/app/config.json"]
+    volumes:
+#      - ./data/app:/app
+#      - ./data/app:/backup
+#      - ./data/.env:/app/.env
+       - /mnt/dm-2/.ugreen_nas/206739/docker/soketi/config.json:/app/config.json
+    ports:
+      - '6001:6001'
+      - '9601:9601'
+    networks:
+      - server_web-network
+      
+  soketi-ui: 
     container_name: 43251-soketi-ui
     image: ghcr.io/aspnmy/soketi-ui:node18-php8.2
     working_dir: /var/www/
     environment:
-      - APP_DEBUG=true
-      - APP_KEY=
-      - DB_CONNECTION=mysql
-      - DB_HOST=127.0.0.1
-      - DB_USERNAME=root
-      - DB_PASSWORD=root
-      - DB_DATABASE=soketi-ui
+       APP_DEBUG: 'true'
+       APP_KEY: 'base64:iT7PDx7j8yKVTj0AW81vTnEQmqLwnVfW'
+       DB_CONNECTION: 'mysql'
+       DB_HOST: '10.168.3.165'
+       DB_USERNAME: 'laravel'
+       DB_PASSWORD: 'laravel'
+       DB_DATABASE: 'laravel'
     ports:
-      - "43251:80"  # 保持字符串格式更安全
+      - "43251:8000"  # 保持字符串格式更安全
+    networks:
+      - server_web-network
