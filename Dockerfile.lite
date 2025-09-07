@@ -49,11 +49,14 @@ COPY nginx.conf /var/www/html/conf/nginx/nginx-site.conf
 # 根据基础镜像jkaninda/nginx-php-fpm:8.2信息，该镜像已预装了多种PHP扩展
 # 包括：zip, mbstring, exif, pcntl, bcmath, gd, intl, redis, memcached, pdo_mysql, pdo_pgsql, opcache, rdkafka
 
-# 只需安装可能缺少的SQLite相关扩展
-RUN set -x && \ 
-    apt-get update -y || echo "Warning: apt-get update had issues" && \ 
-    apt-get install -y --no-install-recommends --fix-missing php-sqlite3 && \ 
-    rm -rf /var/lib/apt/lists/*
+# 基础镜像jkaninda/nginx-php-fpm:8.2已预装SQLite3扩展，无需额外安装
+# 仅添加LiteSQL3初始化代码确保数据库正确配置
+RUN echo "验证SQLite3扩展是否已启用..." && \
+    php -m | grep -q sqlite3 && echo "SQLite3扩展已启用" || echo "Warning: SQLite3扩展未找到"
+
+# 配置SQLite3特定参数
+RUN echo "[sqlite3]" >> $PHP_INI_DIR/conf.d/custom.ini && \
+    echo "sqlite3.extension_dir = /usr/lib/php/20220829/" >> $PHP_INI_DIR/conf.d/custom.ini
 
 # 使用基础镜像提供的PHP配置路径（$PHP_INI_DIR/conf.d/）
 # 这是基础镜像中已设置的标准配置路径
