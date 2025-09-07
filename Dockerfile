@@ -1,4 +1,4 @@
-FROM php:8.2-fpm as composer
+FROM php:8.2-fpm AS composer
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -18,14 +18,14 @@ ADD /composer.lock /src/composer.lock
 
 RUN cd /src && composer install --no-dev --no-scripts
 
-FROM node:18 as modules
+FROM node:18 AS modules
 
 ADD /package.json /src/package.json
 ADD /yarn.lock /src/yarn.lock
 
 RUN cd /src && yarn
 
-FROM node:18 as build
+FROM node:18 AS build
 
 ADD /package.json /src/package.json
 ADD /yarn.lock /src/yarn.lock
